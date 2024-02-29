@@ -6,10 +6,10 @@ import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:prepare2travel/consts.dart';
 import 'package:prepare2travel/data/models/travel.dart';
-import 'package:prepare2travel/data/models/user.dart';
-import 'package:prepare2travel/data/repositories/api/api_travel_repository.dart';
+import 'package:prepare2travel/data/models/local_user_data.dart';
+import 'package:prepare2travel/data/repositories/travel_repository.dart';
 import 'package:prepare2travel/data/repositories/api/api_user_repository.dart';
-import 'package:prepare2travel/data/repositories/local/local_travel_repository.dart';
+import 'package:prepare2travel/data/repositories/local_travel_repository.dart';
 import 'package:prepare2travel/data/repositories/local/local_user_repository.dart';
 import 'package:prepare2travel/domain/repositories/abstract_travel_repository.dart';
 import 'package:prepare2travel/domain/repositories/abstract_user_repository.dart';
@@ -20,7 +20,7 @@ part 'travels_list_state.dart';
 
 class TravelsListBloc extends Bloc<TravelsListEvent, TravelsListState> {
   final LocalTravelRepository localTravelsRepository;
-  final ApiTravelRepository apiTravelsRepository;
+  final TravelRepository apiTravelsRepository;
   final LocalUserRepository localUserRepository;
   final ApiUserRepository apiUserRepository;
   late final StreamSubscription<ConnectivityResult> connectivitySubscription;
@@ -32,12 +32,12 @@ class TravelsListBloc extends Bloc<TravelsListEvent, TravelsListState> {
       : super(TravelsListInitState(user: null, travelsList: [])) {
     on<TravelListScreenOpenedEvent>((event, emit) async {
       await Hive.openBox<Travel>(travelsBoxName);
-      await Hive.openBox<User>(userBoxName);
+      await Hive.openBox<LocalUserData>(userBoxName);
       await _initRepository();
-      User? user = await actualUserRepository.getUser();
+      LocalUserData? user = await actualUserRepository.getUser();
       emit(state.copyWith(user: user));
       //TODO
-        add(LoadTravelsListEvent());
+      add(LoadTravelsListEvent());
     });
 
     on<TravelListScreenDisposedEvent>((event, emit) async {
@@ -49,7 +49,7 @@ class TravelsListBloc extends Bloc<TravelsListEvent, TravelsListState> {
     });
 
     on<UpdateUserEvent>((event, emit) async {
-      User? user = await actualUserRepository.getUser();
+      LocalUserData? user = await actualUserRepository.getUser();
       emit(TravelsListLoadedState(user: user, travelsList: state.travelsList));
     });
 

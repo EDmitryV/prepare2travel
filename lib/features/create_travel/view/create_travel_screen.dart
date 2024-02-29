@@ -1,28 +1,24 @@
 import 'dart:async';
-
-import 'package:auto_route/auto_route.dart';
 import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:prepare2travel/consts.dart';
-import 'package:prepare2travel/data/models/user.dart';
-import 'package:prepare2travel/data/repositories/api/api_travel_repository.dart';
-import 'package:prepare2travel/data/repositories/api/api_weather_repository.dart';
-import 'package:prepare2travel/data/repositories/local/local_travel_repository.dart';
-import 'package:prepare2travel/domain/model/travel_preset.dart';
+import 'package:prepare2travel/core/widgets/error_body_widget.dart';
+import 'package:prepare2travel/data/repositories/travel_repository.dart';
+import 'package:prepare2travel/data/repositories/weather_repository.dart';
+import 'package:prepare2travel/data/repositories/local_travel_repository.dart';
+import 'package:prepare2travel/domain/entities/travel_preset.dart';
 import 'package:prepare2travel/features/create_travel/bloc/create_travel_bloc.dart';
 import 'package:prepare2travel/features/create_travel/widget/error_field.dart';
-import 'package:prepare2travel/router/router.dart';
+import 'package:prepare2travel/route_names.dart';
 import 'package:talker_flutter/talker_flutter.dart';
+import 'package:go_router/go_router.dart';
 
-@RoutePage()
 class CreateTravelScreen extends StatefulWidget {
-  const CreateTravelScreen({super.key, required this.user});
-  final User user;
+  const CreateTravelScreen({super.key});
 
   @override
   State<CreateTravelScreen> createState() => _CreateTravelScreenState();
@@ -30,14 +26,12 @@ class CreateTravelScreen extends StatefulWidget {
 
 class _CreateTravelScreenState extends State<CreateTravelScreen> {
   final CreateTravelBloc _createTravelBloc = CreateTravelBloc(
-      GetIt.I<ApiTravelRepository>(),
+      GetIt.I<TravelRepository>(),
       GetIt.I<LocalTravelRepository>(),
       GetIt.I<ApiWeatherRepository>());
-  late final FToast _fToast;
   @override
   void initState() {
-    _fToast = FToast();
-    _createTravelBloc.add(CreateTravelScreenOpenedEvent(user: widget.user));
+    _createTravelBloc.add(CreateTravelScreenOpenedEvent());
     super.initState();
   }
 
@@ -82,11 +76,11 @@ class _CreateTravelScreenState extends State<CreateTravelScreen> {
         }
         String title = "Create travel"; //TODO
         Widget body;
-        if (state is CreateTravelBaseState) {
-          if (state.errorMessage.isNotEmpty) {
-            _showMessage(state.errorMessage);
-            _createTravelBloc.add(EndErrorMessageNotification());
-          }
+        if (state.errorMessage.isNotEmpty) {
+          body = ErrorBodyWidget<CreateTravelScreenOpenedEvent>(
+              bloc: _createTravelBloc,
+              retryEvent: CreateTravelScreenOpenedEvent());
+        } else if (state is CreateTravelBaseState) {
           body = SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 5),
@@ -166,7 +160,7 @@ class _CreateTravelScreenState extends State<CreateTravelScreen> {
           appBar: AppBar(
             leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () => AutoRouter.of(context).pop()),
+                onPressed: () => context.pop()),
             title: Text(title),
             actions: [
               FilledButton.icon(
@@ -176,7 +170,8 @@ class _CreateTravelScreenState extends State<CreateTravelScreen> {
                         .add(SaveTravelEvent(completer: completer));
                     completer.future.then((value) {
                       if (value.travel != null) {
-                        AutoRouter.of(context).popAndPush(TravelRoute(travel: value.travel!));
+                        context.pushNamed(RouteNames.travel,
+                            queryParameters: {"travel": value.travel!.toMap()});
                       }
                     });
                   },
@@ -200,24 +195,5 @@ class _CreateTravelScreenState extends State<CreateTravelScreen> {
         );
       },
     );
-  }
-
-  _showMessage(String message) {
-    _fToast.init(context);
-    Widget toast = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25.0),
-        color: Theme.of(context).colorScheme.error,
-      ),
-      child: Text(message),
-    );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fToast.showToast(
-        child: toast,
-        gravity: ToastGravity.CENTER,
-        toastDuration: const Duration(seconds: 3),
-      );
-    });
   }
 }

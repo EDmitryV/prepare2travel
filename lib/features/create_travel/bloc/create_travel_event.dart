@@ -3,10 +3,7 @@ part of 'create_travel_bloc.dart';
 abstract class CreateTravelEvent {}
 
 class CreateTravelScreenOpenedEvent extends CreateTravelEvent {
-  CreateTravelScreenOpenedEvent({
-    required this.user,
-  });
-  User user;
+  CreateTravelScreenOpenedEvent();
 }
 
 class CreateTravelScreenDisposedEvent extends CreateTravelEvent {}
@@ -56,4 +53,3 @@ class SaveTravelEvent extends CreateTravelEvent {
   Completer completer;
 }
 
-class EndErrorMessageNotification extends CreateTravelEvent {}

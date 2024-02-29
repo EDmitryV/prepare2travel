@@ -1,22 +1,21 @@
 import 'dart:async';
-
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:prepare2travel/data/models/edit_item_dto.dart';
 import 'package:prepare2travel/data/models/travel.dart';
-import 'package:prepare2travel/data/repositories/api/api_travel_repository.dart';
-import 'package:prepare2travel/data/repositories/local/local_travel_repository.dart';
+import 'package:prepare2travel/data/repositories/travel_repository.dart';
+import 'package:prepare2travel/data/repositories/local_travel_repository.dart';
 import 'package:prepare2travel/features/travel/bloc/travel_bloc.dart';
 import 'package:prepare2travel/features/travel/widgets/day_list_card.dart';
 import 'package:prepare2travel/features/travel/widgets/fake_item_list_tile.dart';
 import 'package:prepare2travel/features/travel/widgets/item_list_tile.dart';
-import 'package:prepare2travel/router/router.dart';
+import 'package:prepare2travel/route_names.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
-@RoutePage()
 class TravelScreen extends StatefulWidget {
   final Travel travel;
   const TravelScreen({super.key, required this.travel});
@@ -26,8 +25,8 @@ class TravelScreen extends StatefulWidget {
 }
 
 class _TravelScreenState extends State<TravelScreen> {
-  final _travelBloc = TravelBloc(
-      GetIt.I<ApiTravelRepository>(), GetIt.I<LocalTravelRepository>());
+  final _travelBloc =
+      TravelBloc(GetIt.I<TravelRepository>(), GetIt.I<LocalTravelRepository>());
 
   @override
   void initState() {
@@ -50,7 +49,7 @@ class _TravelScreenState extends State<TravelScreen> {
                 SliverAppBar(
                   leading: IconButton(
                       icon: const Icon(Icons.arrow_back_rounded),
-                      onPressed: () => Navigator.of(context).pop()),
+                      onPressed: () => context.pop()),
                   actions: [
                     if (kDebugMode)
                       IconButton(
@@ -135,8 +134,10 @@ class _TravelScreenState extends State<TravelScreen> {
               floatingActionButton: FloatingActionButton(
                   child: const Icon(Icons.add),
                   onPressed: () {
-                    AutoRouter.of(context) //TODO
-                        .push(EditItemRoute(item: null, travel: widget.travel))
+                    context
+                        .pushNamed(RouteNames.editItem,
+                            extra:
+                                EditItemDto(travel: widget.travel, item: null))
                         .then((_) {
                       _travelBloc.add(TravelScreenReloadTravelEvent());
                     });

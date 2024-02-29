@@ -1,20 +1,19 @@
 import 'dart:async';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
+import 'package:prepare2travel/core/widgets/error_body_widget.dart';
 import 'package:prepare2travel/data/models/item.dart';
 import 'package:prepare2travel/data/models/travel.dart';
-import 'package:prepare2travel/data/repositories/api/api_travel_repository.dart';
-import 'package:prepare2travel/data/repositories/local/local_travel_repository.dart';
+import 'package:prepare2travel/data/repositories/travel_repository.dart';
+import 'package:prepare2travel/data/repositories/local_travel_repository.dart';
 import 'package:prepare2travel/features/create_travel/widget/error_field.dart';
 import 'package:prepare2travel/features/edit_item/bloc/edit_item_bloc.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
-@RoutePage()
 class EditItemScreen extends StatefulWidget {
   const EditItemScreen({super.key, required this.item, required this.travel});
   final Item? item;
@@ -26,19 +25,17 @@ class EditItemScreen extends StatefulWidget {
 
 class _EditItemScreenState extends State<EditItemScreen> {
   final EditItemBloc _editItemBloc = EditItemBloc(
-      GetIt.I<ApiTravelRepository>(), GetIt.I<LocalTravelRepository>());
-  late final FToast _fToast;
+      GetIt.I<TravelRepository>(), GetIt.I<LocalTravelRepository>());
   @override
   void initState() {
-    _fToast = FToast();
-    _editItemBloc.add(
-        ItemScreenOpenedEvent(initialItem: widget.item, travel: widget.travel));
+    _editItemBloc.add(EditItemScreenOpenedEvent(
+        initialItem: widget.item, travel: widget.travel));
     super.initState();
   }
 
   @override
   void dispose() {
-    _editItemBloc.add(ScreenDisposedEvent());
+    _editItemBloc.add(EditItemScreenDisposedEvent());
     super.dispose();
   }
 
@@ -60,11 +57,12 @@ class _EditItemScreenState extends State<EditItemScreen> {
           title = "Update item"; //TODO
         }
         Widget body;
-        if (state is EditItemLoadedState) {
-          if (state.errorMessage.isNotEmpty) {
-            _showMessage(state.errorMessage);
-            _editItemBloc.add(EndErrorMessageNotification());
-          }
+        if (state.errorMessage.isNotEmpty) {
+          body = ErrorBodyWidget(
+              bloc: _editItemBloc,
+              retryEvent: EditItemScreenOpenedEvent(
+                  initialItem: widget.item, travel: widget.travel));
+        } else if (state is EditItemLoadedState) {
           body = Padding(
             padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 5),
             child: Column(
@@ -107,7 +105,8 @@ class _EditItemScreenState extends State<EditItemScreen> {
                   children: [
                     TextButton.icon(
                       icon: const Icon(Icons.save),
-                      onPressed: () {if(canSave){
+                      onPressed: () {
+                        if (canSave) {
                           final completer = Completer();
                           _editItemBloc
                               .add(CreateOrSaveEvent(completer: completer));
@@ -118,7 +117,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                               state.neededErrorMessage,
                               state.nameErrorMessage
                             ].where((element) => element.isNotEmpty).isEmpty) {
-                              AutoRouter.of(context).pop();
+                              context.pop();
                             }
                           });
                         }
@@ -134,7 +133,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                             completer.future.then((actualState) {
                               if (actualState.errorMessage == null ||
                                   actualState.errorMessage!.isEmpty) {
-                                AutoRouter.of(context).pop();
+                                context.pop();
                               }
                             });
                           },
@@ -143,7 +142,9 @@ class _EditItemScreenState extends State<EditItemScreen> {
                   ],
                 ),
                 if (!canSave)
-                  const ErrorField(error: "Some fields are filled in incorrectly. You can't save the item."),
+                  const ErrorField(
+                      error:
+                          "Some fields are filled in incorrectly. You can't save the item."),
               ],
             ),
           );
@@ -156,7 +157,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
           appBar: AppBar(
             leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () => Navigator.of(context).pop()),
+                onPressed: () => context.pop()),
             title: Text(title),
             actions: [
               if (kDebugMode)
@@ -177,24 +178,5 @@ class _EditItemScreenState extends State<EditItemScreen> {
         );
       },
     );
-  }
-
-  _showMessage(String message) {
-    _fToast.init(context);
-    Widget toast = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25.0),
-        color: Theme.of(context).colorScheme.error,
-      ),
-      child: Text(message),
-    );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fToast.showToast(
-        child: toast,
-        gravity: ToastGravity.CENTER,
-        toastDuration: const Duration(seconds: 3),
-      );
-    });
   }
 }

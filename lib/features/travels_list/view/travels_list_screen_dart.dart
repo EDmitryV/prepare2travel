@@ -1,21 +1,20 @@
 import 'dart:async';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:prepare2travel/data/repositories/api/api_travel_repository.dart';
+import 'package:go_router/go_router.dart';
+import 'package:prepare2travel/data/repositories/travel_repository.dart';
 import 'package:prepare2travel/data/repositories/api/api_user_repository.dart';
-import 'package:prepare2travel/data/repositories/local/local_travel_repository.dart';
+import 'package:prepare2travel/data/repositories/local_travel_repository.dart';
 import 'package:prepare2travel/data/repositories/local/local_user_repository.dart';
 import 'package:prepare2travel/features/travels_list/bloc/travels_list_bloc.dart';
 import 'package:prepare2travel/features/travels_list/widgets/fake_travels_list_tile.dart';
 import 'package:prepare2travel/features/travels_list/widgets/travels_list_tile.dart';
-import 'package:prepare2travel/router/router.dart';
+import 'package:prepare2travel/route_names.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
-@RoutePage()
 class TravelsListScreen extends StatefulWidget {
   const TravelsListScreen({super.key});
 
@@ -26,7 +25,7 @@ class TravelsListScreen extends StatefulWidget {
 class _TravelsListScreenState extends State<TravelsListScreen> {
   final _travelsListBloc = TravelsListBloc(
       GetIt.I<LocalTravelRepository>(),
-      GetIt.I<ApiTravelRepository>(),
+      GetIt.I<TravelRepository>(),
       GetIt.I<LocalUserRepository>(),
       GetIt.I<ApiUserRepository>());
 
@@ -44,14 +43,15 @@ class _TravelsListScreenState extends State<TravelsListScreen> {
           const paddings =
               EdgeInsets.only(top: 16, bottom: 200, left: 40, right: 40);
           Widget body;
-          if (state is TravelsListLoadedState && state.user == null) {
-            AutoRouter.of(context).push(EditUserRoute(user: null)).then((_) {
-              _travelsListBloc.add(UpdateUserEvent());
-            });
-            body = const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (state is TravelsListLoadedState) {
+          // if (state is TravelsListLoadedState && state.user == null) {
+          //   context.pushNamed(EditUserRoute(user: null)).then((_) {
+          //     _travelsListBloc.add(UpdateUserEvent());
+          //   });
+          //   body = const Center(
+          //     child: CircularProgressIndicator(),
+          //   );
+          // } else
+          if (state is TravelsListLoadedState) {
             if (state.travelsList.isEmpty) {
               body = const Center(
                 child: Text(
@@ -113,24 +113,23 @@ class _TravelsListScreenState extends State<TravelsListScreen> {
               },
             );
           }
-          return Scaffold(floatingActionButton: FloatingActionButton(
+          return Scaffold(
+              floatingActionButton: FloatingActionButton(
                   child: const Icon(Icons.add),
                   onPressed: () {
                     //TODO
-                    AutoRouter.of(context)
-                        .push(CreateTravelRoute(user: state.user!))
-                        .then((value) =>
-                            _travelsListBloc.add(LoadTravelsListEvent()));
+                    context.goNamed(RouteNames.createTravel);
+                    // .then((value) =>
+                    //     _travelsListBloc.add(LoadTravelsListEvent()));TODO reload on new open
                   }),
               appBar: AppBar(
-                leading: IconButton(
-                  icon: const Icon(Icons.account_circle),
+                leading: TextButton.icon(
+                  label: Text("Log out"), //TODO translate
+                  icon: const Icon(Icons.logout),
                   onPressed: () {
-                    AutoRouter.of(context)
-                        .push(EditUserRoute(user: null))
-                        .then((_) {
+                    context.pushNamed(RouteNames.signIn).then((_) {
                       _travelsListBloc.add(UpdateUserEvent());
-                    });
+                    }); //TODO update user out of page
                   },
                 ),
                 title: const Text("Travels"), //TODO

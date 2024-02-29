@@ -7,11 +7,10 @@ import 'package:prepare2travel/consts.dart';
 import 'package:prepare2travel/data/models/day.dart';
 import 'package:prepare2travel/data/models/item.dart';
 import 'package:prepare2travel/data/models/travel.dart';
-import 'package:prepare2travel/data/models/user.dart';
-import 'package:prepare2travel/data/repositories/api/api_travel_repository.dart';
-import 'package:prepare2travel/data/repositories/api/api_weather_repository.dart';
-import 'package:prepare2travel/data/repositories/local/local_travel_repository.dart';
-import 'package:prepare2travel/domain/model/travel_preset.dart';
+import 'package:prepare2travel/data/repositories/travel_repository.dart';
+import 'package:prepare2travel/data/repositories/weather_repository.dart';
+import 'package:prepare2travel/data/repositories/local_travel_repository.dart';
+import 'package:prepare2travel/domain/entities/travel_preset.dart';
 import 'package:prepare2travel/domain/repositories/abstract_travel_repository.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
@@ -19,10 +18,10 @@ part 'create_travel_event.dart';
 part 'create_travel_state.dart';
 
 class CreateTravelBloc extends Bloc<CreateTravelEvent, CreateTravelState> {
-  final ApiTravelRepository apiTravelRepository;
+  final TravelRepository apiTravelRepository;
   final LocalTravelRepository localTravelRepository;
   final ApiWeatherRepository apiWeatherRepository;
-  late final User user;
+
   late final StreamSubscription<ConnectivityResult> connectivitySubscription;
   late AbstractTravelRepository actualRepository;
   CreateTravelBloc(this.apiTravelRepository, this.localTravelRepository,
@@ -42,7 +41,6 @@ class CreateTravelBloc extends Bloc<CreateTravelEvent, CreateTravelState> {
                 DateTime.now().day + 2),
             travelEndDateErrorMessage: "")) {
     on<CreateTravelScreenOpenedEvent>((event, emit) async {
-      user = event.user;
       await Hive.openBox<Travel>(travelsBoxName);
       await _initRepository();
       emit(CreateTravelBaseState(
@@ -50,7 +48,7 @@ class CreateTravelBloc extends Bloc<CreateTravelEvent, CreateTravelState> {
           region: state.region,
           country: state.country,
           descriptionErrorMessage: state.descriptionErrorMessage,
-          errorMessage: state.errorMessage,
+          errorMessage: "",
           selectedTravelPresets: state.selectedTravelPresets,
           description: state.description,
           generatedTravelPreset: state.generatedTravelPreset,
@@ -220,10 +218,6 @@ class CreateTravelBloc extends Bloc<CreateTravelEvent, CreateTravelState> {
       } finally {
         event.completer.complete(state);
       }
-    });
-
-    on<EndErrorMessageNotification>((event, emit) async {
-      emit(state.copyWith(errorMessage: ""));
     });
   }
   Future<void> _generateTravelPreset(

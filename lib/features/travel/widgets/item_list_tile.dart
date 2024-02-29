@@ -1,9 +1,9 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:prepare2travel/data/models/item.dart';
+import 'package:go_router/go_router.dart';
+import 'package:prepare2travel/data/models/edit_item_dto.dart';
 import 'package:prepare2travel/data/models/travel.dart';
 import 'package:prepare2travel/features/travel/bloc/travel_bloc.dart';
-import 'package:prepare2travel/router/router.dart';
+import 'package:prepare2travel/route_names.dart';
 
 class ItemListTile extends StatelessWidget {
   const ItemListTile({
@@ -24,8 +24,9 @@ class ItemListTile extends StatelessWidget {
         child: InkWell(
           hoverColor: Colors.transparent,
           onTap: () {
-            AutoRouter.of(context)
-                .push(EditItemRoute(item: travel.items[idx], travel: travel))
+            context
+                .pushNamed(RouteNames.editItem,
+                    extra: EditItemDto(travel: travel, item: travel.items[idx]))
                 .then((_) {
               bloc.add(TravelScreenReloadTravelEvent());
             });

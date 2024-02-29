@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive_flutter/adapters.dart';
 
 part 'day.g.dart';
@@ -8,7 +9,7 @@ part 'day.g.dart';
 class Day extends HiveObject {
   //fields
   @HiveField(0)
-  DateTime? date;
+  DateTime date;
   @HiveField(1)
   double? minTemperature;
   @HiveField(2)
@@ -19,27 +20,44 @@ class Day extends HiveObject {
   String? precipitation;
   @HiveField(5)
   String? interesting;
+  @HiveField(6)
+  String? id;
 
   //other
-  Day({
-     this.date,
-     this.minTemperature,
-     this.maxTemperature,
-     this.humidity,
-     this.precipitation,
-     this.interesting,
-  });
-
-  Day copyWith({
-    DateTime? date,
-    double? humidity,
-    double? minTemperature,
-    double? maxTemperature,
-    String? precipitation,
-    String? interesting,
-  }) {
+  Day(
+      {required this.date,
+      this.minTemperature,
+      this.maxTemperature,
+      this.humidity,
+      this.precipitation,
+      this.interesting,
+      this.id});
+  factory Day.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) {
+    final data = document.data()!;
+    return Day(
+        id: document.id,
+        date: data['date'],
+        minTemperature:
+            data.containsKey('minTemperature') ? data['minTemperature'] : null,
+        maxTemperature:
+            data.containsKey("maxTemperature") ? data['maxTemperature'] : null,
+        humidity: data.containsKey('humidity') ? data['humidity'] : null,
+        precipitation:
+            data.containsKey('precipitation') ? data['precipitation'] : null,
+        interesting:
+            data.containsKey('interesting') ? data['interesting'] : null);
+  }
+  Day copyWith(
+      {DateTime? date,
+      double? humidity,
+      double? minTemperature,
+      double? maxTemperature,
+      String? precipitation,
+      String? interesting,
+      String? id}) {
     return Day(
       date: date ?? this.date,
+      id: id ?? this.id,
       minTemperature: minTemperature ?? this.minTemperature,
       maxTemperature: maxTemperature ?? this.maxTemperature,
       humidity: humidity ?? this.humidity,
@@ -50,7 +68,8 @@ class Day extends HiveObject {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'date': date!.millisecondsSinceEpoch,
+      'id': id,
+      'date': date.millisecondsSinceEpoch,
       'minTemperature': minTemperature,
       'maxTemperature': maxTemperature,
       'humidity': humidity,
@@ -61,6 +80,7 @@ class Day extends HiveObject {
 
   factory Day.fromMap(Map<String, dynamic> map) {
     return Day(
+      id: map['id'] as String,
       date: DateTime.fromMillisecondsSinceEpoch(map['date'] as int),
       minTemperature: map['minTemperature'] as double,
       maxTemperature: map['maxTemperature'] as double,
@@ -77,7 +97,7 @@ class Day extends HiveObject {
 
   @override
   String toString() {
-    return 'Date(date: $date, minTemperature: $minTemperature, maxTemperature: $maxTemperature, humidity: $humidity, precipitation: $precipitation, interesting: $interesting)';
+    return 'Date(id: $id, date: $date, minTemperature: $minTemperature, maxTemperature: $maxTemperature, humidity: $humidity, precipitation: $precipitation, interesting: $interesting)';
   }
 
   @override
@@ -89,7 +109,8 @@ class Day extends HiveObject {
         other.maxTemperature == maxTemperature &&
         other.humidity == humidity &&
         other.precipitation == precipitation &&
-        other.interesting == interesting;
+        other.interesting == interesting &&
+        other.id == id;
   }
 
   @override
@@ -99,6 +120,7 @@ class Day extends HiveObject {
         maxTemperature.hashCode ^
         humidity.hashCode ^
         precipitation.hashCode ^
-        interesting.hashCode;
+        interesting.hashCode ^
+        id.hashCode;
   }
 }

@@ -1,10 +1,10 @@
-import 'package:auto_route/auto_route.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:prepare2travel/data/models/item.dart';
 import 'package:prepare2travel/data/models/travel.dart';
 import 'package:prepare2travel/features/travels_list/bloc/travels_list_bloc.dart';
-import 'package:prepare2travel/router/router.dart';
+import 'package:prepare2travel/route_names.dart';
 
 class TravelsListTile extends StatelessWidget {
   const TravelsListTile({
@@ -54,7 +54,9 @@ class TravelsListTile extends StatelessWidget {
           hoverColor: Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           onTap: () {
-            AutoRouter.of(context).push(TravelRoute(travel: travel)).then((value) => bloc.add(LoadTravelsListEvent(user:bloc.state.user)));
+            context.pushNamed(RouteNames.travel, extra: travel).then(
+                (value) =>
+                    bloc.add(LoadTravelsListEvent(user: bloc.state.user)));//TODO reload on new page open
           },
           child: Padding(
             padding: const EdgeInsets.all(15.0),

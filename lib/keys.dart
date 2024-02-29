@@ -1,0 +1,1 @@
+const String visualcrossingApiKey = "73GP9W7CEK6N4LX3X34XUY8FC";

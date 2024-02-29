@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/adapters.dart';
 
@@ -25,7 +26,7 @@ class Travel extends HiveObject {
   @HiveField(6)
   final DateTime creationDate;
   @HiveField(7)
-   int? id;
+  String? id;
 
   //other
   Travel({
@@ -35,9 +36,21 @@ class Travel extends HiveObject {
     required this.days,
     required this.items,
     required this.creationDate,
-     this.id,
+    this.id,
   });
-
+  //Need to load data from collections
+  factory Travel.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) {
+    final data = document.data()!;
+    return Travel(
+      id: document.id,
+      region: data["region"],
+      country: data['country'],
+      city: data['city'],
+      creationDate: data['creationDate'],
+      days: [],
+      items: [],
+    );
+  }
   Travel copyWith({
     String? country,
     String? region,
@@ -46,7 +59,7 @@ class Travel extends HiveObject {
     List<Item>? items,
     bool? business,
     DateTime? creationDate,
-    int? id,
+    String? id,
   }) {
     return Travel(
       country: country ?? this.country,
@@ -64,8 +77,8 @@ class Travel extends HiveObject {
       'country': country,
       'region': region,
       'city': city,
-      'days': days.map((x) => x.toMap()).toList(),
-      'items': items.map((x) => x.toMap()).toList(),
+      // 'days': days.map((x) => x.toMap()).toList(),
+      // 'items': items.map((x) => x.toMap()).toList(),
       'creationDate': creationDate.millisecondsSinceEpoch,
       'id': id
     };
@@ -73,20 +86,22 @@ class Travel extends HiveObject {
 
   factory Travel.fromMap(Map<String, dynamic> map) {
     return Travel(
-      id: map['id'] as int,
+      id: map['id'] as String,
       country: map['country'] as String,
       region: map['region'] as String,
       city: map['city'] as String,
-      days: List<Day>.from(
-        (map['days'] as List<dynamic>).map<Day>(
-          (x) => Day.fromMap(x as Map<String, dynamic>),
-        ),
-      ),
-      items: List<Item>.from(
-        (map['items'] as List<dynamic>).map<Item>(
-          (x) => Item.fromMap(x as Map<String, dynamic>),
-        ),
-      ),
+      days: [],
+      items: [],
+      // days: List<Day>.from(
+      //   (map['days'] as List<dynamic>).map<Day>(
+      //     (x) => Day.fromMap(x as Map<String, dynamic>),
+      //   ),
+      // ),
+      // items: List<Item>.from(
+      //   (map['items'] as List<dynamic>).map<Item>(
+      //     (x) => Item.fromMap(x as Map<String, dynamic>),
+      //   ),
+      // ),
       creationDate:
           DateTime.fromMillisecondsSinceEpoch(map['creationDate'] as int),
     );

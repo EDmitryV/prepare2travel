@@ -10,7 +10,7 @@ class TravelListScreenOpenedEvent extends TravelsListEvent {
 
 class LoadTravelsListEvent extends TravelsListEvent {
   final Completer? completer;
-  final User? user;
+  final LocalUserData? user;
 
   LoadTravelsListEvent({this.completer, this.user});
 }

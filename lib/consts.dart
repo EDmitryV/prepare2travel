@@ -1,12 +1,11 @@
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:prepare2travel/data/models/item.dart';
-import 'package:prepare2travel/domain/model/travel_preset.dart';
+import 'package:prepare2travel/domain/entities/travel_preset.dart';
 
 const String userBoxName = "user_box";
 const String travelsBoxName = "travels_box";
 const String serverAdr = "localhost:8090";
-const String visualcrossingApiKey = "73GP9W7CEK6N4LX3X34XUY8FC";
 List<TravelPreset> baseTravelPresets = [
   TravelPreset(
       icon: Icons.directions_bike,

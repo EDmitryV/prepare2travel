@@ -6,8 +6,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:prepare2travel/consts.dart';
 import 'package:prepare2travel/data/models/item.dart';
 import 'package:prepare2travel/data/models/travel.dart';
-import 'package:prepare2travel/data/repositories/api/api_travel_repository.dart';
-import 'package:prepare2travel/data/repositories/local/local_travel_repository.dart';
+import 'package:prepare2travel/data/repositories/travel_repository.dart';
+import 'package:prepare2travel/data/repositories/local_travel_repository.dart';
 import 'package:prepare2travel/domain/repositories/abstract_travel_repository.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
@@ -15,7 +15,7 @@ part 'travel_event.dart';
 part 'travel_state.dart';
 
 class TravelBloc extends Bloc<TravelEvent, TravelState> {
-  final ApiTravelRepository apiTravelRepository;
+  final TravelRepository apiTravelRepository;
   final LocalTravelRepository localTravelRepository;
   late final Travel? travel;
   StreamSubscription<ConnectivityResult>? connectivitySubscription;
@@ -87,8 +87,7 @@ class TravelBloc extends Bloc<TravelEvent, TravelState> {
       Travel? travel = await actualRepository.getTravel(state.travel.key);
       if (travel != null) {
         emit(TravelLoadedState(travel: travel));
-      }
-      else {
+      } else {
         emit(TravelErrorState(travel: state.travel));
       }
     } catch (e, st) {

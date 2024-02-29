@@ -6,8 +6,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:prepare2travel/consts.dart';
 import 'package:prepare2travel/data/models/item.dart';
 import 'package:prepare2travel/data/models/travel.dart';
-import 'package:prepare2travel/data/repositories/api/api_travel_repository.dart';
-import 'package:prepare2travel/data/repositories/local/local_travel_repository.dart';
+import 'package:prepare2travel/data/repositories/travel_repository.dart';
+import 'package:prepare2travel/data/repositories/local_travel_repository.dart';
 import 'package:prepare2travel/domain/repositories/abstract_travel_repository.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
@@ -17,7 +17,7 @@ part 'edit_item_state.dart';
 class EditItemBloc extends Bloc<EditItemEvent, EditItemState> {
   late final Item? initialItem;
   late final Travel travel;
-  final ApiTravelRepository apiTravelRepository;
+  final TravelRepository apiTravelRepository;
   final LocalTravelRepository localTravelRepository;
   late final StreamSubscription<ConnectivityResult> connectivitySubscription;
   late AbstractTravelRepository actualRepository;
@@ -30,10 +30,11 @@ class EditItemBloc extends Bloc<EditItemEvent, EditItemState> {
             needed: 1,
             have: 0,
             nameErrorMessage: '')) {
-    on<ItemScreenOpenedEvent>((event, emit) async {
+    on<EditItemScreenOpenedEvent>((event, emit) async {
       travel = event.travel;
       if (event.initialItem != null) {
         emit(state.copyWith(
+            errorMessage: "",
             name: event.initialItem!.name,
             have: event.initialItem!.have,
             needed: event.initialItem!.needed));
@@ -51,7 +52,7 @@ class EditItemBloc extends Bloc<EditItemEvent, EditItemState> {
           name: state.name));
     });
 
-    on<ScreenDisposedEvent>((event, emit) async {
+    on<EditItemScreenDisposedEvent>((event, emit) async {
       await connectivitySubscription.cancel();
     });
 

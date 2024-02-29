@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "868678058300",
+    "project_id": "prepare2travel-60e7f",
+    "storage_bucket": "prepare2travel-60e7f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:868678058300:android:a75a6c069d97705d6d5e39",
+        "android_client_info": {
+          "package_name": "com.edmitryv.prepare2travel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "868678058300-frafvg5hhor58tn37o6c05aieadfjv1e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.edmitryv.prepare2travel",
+            "certificate_hash": "1887caf7f0d66c557026b1a40c5873be3beb4105"
+          }
+        },
+        {
+          "client_id": "868678058300-pc140p8k2a7n8ovc7d09254olrhem3hl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZFubwHNr-5Wo7dbnBeKQE3pDRmApbdZs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "868678058300-pc140p8k2a7n8ovc7d09254olrhem3hl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
